@@ -1,3 +1,9 @@
+logs/
+body.json
+cloud_upload_config.py
+head.json
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
