@@ -1,0 +1,6 @@
+py7zr
+pandas
+numpy
+fastparquet
+pyarrow
+chardet
