@@ -76,3 +76,47 @@ class cloud:
         r = requests.post(api, headers=self.get_auth())
         log.debug(f'submitted job {r}')
         return r
+
+
+class cloudC:
+    def get_api(self, path):
+        return "https://{}.{}.celonis.cloud/{}".format(self.tenant, self.realm,
+                                                       path)
+
+    def __init__(self, tenant, realm, api_key, client_id, connection_id):
+        self.tenant = tenant
+        self.realm = realm
+        self.api_key = api_key
+        self.client_id = client_id
+        self.connection_id = connection_id
+
+    def get_jobs_api(self, dataPoolId):
+        return self.get_api("continuous-batch-processing/api/v1/{}"
+                            .format(dataPoolId))
+
+    def get_auth(self):
+        # if you want to use an api key change use Bearer instead of AppKey
+        return {'Authorization': 'AppKey ' + self.api_key}
+
+    def list_jobs(self, dataPoolId):
+        api = self.get_jobs_api(dataPoolId)
+        return requests.get(api, headers=self.get_auth()).json()
+
+    def push_new_chunk(self, dataPoolId, tablename, file_path, fallbackVarcharLength=None):
+        api = self.get_jobs_api(dataPoolId) + "/items"
+        params = {'targetName': tablename, 'clientId': self.client_id, 'connectionId': self.connection_id, 'fallbackVarcharLength': fallbackVarcharLength, 'upsertStrategy': 'UPSERT_WITH_NULLIFICATION'}
+        headers = self.get_auth()
+        file = {'file': open(file_path, 'rb')}
+        return requests.post(url=api, params=params, files=file, headers=headers)
+
+    def get_status(self, dataPoolId, tablename):
+        api = self.get_jobs_api(dataPoolId) + "/flushes"
+        params = {'targetName': tablename, 'connectionId': self.connection_id}
+        headers = self.get_auth()
+        response = requests.get(url=api, params=params, headers=headers)
+        if response.status_code != 200:
+            print("Received non 200 code", response.status_code, response.content)
+            return
+        else:
+            flushes = response.json(object_pairs_hook=collections.OrderedDict)
+            return flushes
