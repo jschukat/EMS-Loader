@@ -32,7 +32,7 @@ def time_casting(df):
         df = '19700101'+df
         return dt(df)
     except Exception as e:
-        print(f'casting {df} to time failed with {e}')
+        log.error(f'casting {df} to time failed with {e}')
 
         
 def dt(df):
@@ -40,7 +40,7 @@ def dt(df):
         df = pd.to_datetime(df, errors='coerce')
         return df.astype('datetime64')
     except Exception as e:
-        print(f'casting {df} to datetime failed with {e}')
+        log.error(f'casting {df} to datetime failed with {e}')
 
         
 def flt(df):
