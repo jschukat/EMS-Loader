@@ -1,16 +1,16 @@
 # EMS Loader
 The EMS Loader can be used to load ABAP Export, csv or Excel files from the File Storage Manager into the EMS.
 ## Prerequisites
-- open a Terminal window (red circle) by lanuching it from the Launcher (blue circle)<br/>![Open Terminal window example](images/10.png?raw=true "Open Terminal window")
-- enter git clone https://github.com/jschukat/EMS-Loader.git in the console and run the command<br/>![Run git clone example](images/20.png?raw=true "Run git clone")
-- access the newly created EMS folder
-- grant the necessary permissions to the MLWB App-Key.
+- grant the necessary permissions to the MLWB App-Key. (If your MLWB is called test and App-key with the name: "test (Workbench)" will show up in the permission menus.)
   - (Process Analytics: all if still applicable)
   - Event Collection: all
   - File Storage Manager: Read, List
   - Machine Learning: all
+- open a Terminal window (red circle) by lanuching it from the Launcher (blue circle)<br/>![Open Terminal window example](images/10.png?raw=true "Open Terminal window")
+- enter git clone https://github.com/jschukat/EMS-Loader.git in the console and run the command<br/>![Run git clone example](images/20.png?raw=true "Run git clone")
+- access the newly created EMS folder
 ## 1. Run EMS Loader
-open the RUN_ME.ipynb file and execute both<br/>
+open the RUN_ME.ipynb file and execute the cells displayed (don't worry if it is only one).<br/>
 ![run RUN_ME.ipynb example](images/30.png?raw=true "run RUN_ME.ipynb")
 ## 2. Enter URL
 - The URL to be entered is the url you can see in the destination Data Pool. Go to the Event Collection
