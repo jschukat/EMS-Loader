@@ -666,9 +666,9 @@ def import_non_sap_file(non_sap_file,
                         data,
                         delta,
                         as_string,
-                        pwd=None,
                         encoding_list=[None, 'utf-8', 'ascii', 'cp1252', 'latin_1', 'iso-8859-1'],
                         no_quoting=False,
+                        pwd=None,
                         ):
     target_name = Path(non_sap_file.file).name
     target_name = clean_table_name(target_name)
