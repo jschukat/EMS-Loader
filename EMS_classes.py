@@ -17,7 +17,7 @@ global generic_file_type
 generic_file_type = ['.csv', '.xlsx', '.xls', '.parquet']
 
 global sap_file_type
-sap_file_type = '(.*)_[0-9]{8}_[0-9]{6}.'
+sap_file_type = '(.*)_[0-9]{8}_[0-9]{6}\.'
 
 global encrypted
 encrypted = ['.gpg', '.pgp']
