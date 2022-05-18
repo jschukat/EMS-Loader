@@ -666,10 +666,11 @@ def import_non_sap_file(non_sap_file,
                         data,
                         delta,
                         as_string,
-                        encoding_list=[None, 'utf-8', 'ascii', 'cp1252', 'latin_1', 'iso-8859-1'],
-                        no_quoting=False,
+                        config,
                         pwd=None,
                         ):
+    no_quoting = config["no_quoting"]
+    encoding_list = config["encoding_list"]
     target_name = Path(non_sap_file.file).name
     target_name = clean_table_name(target_name)
     if target_name in data:
@@ -684,7 +685,7 @@ def import_non_sap_file(non_sap_file,
             jobstatus[job_handle['id']] = False
         except KeyError:
             logging.error(f'failed to get job id for file {non_sap_file} with job: {job_handle}')
-            return None
+            return data, None
         logging.info(f'starting to upload {target_name}')
         try:
             if len(test_member_part_of_object(non_sap_file.file, ["zip", "7z", "gz", "tar"])) > 0:
@@ -823,43 +824,30 @@ def import_non_sap_file(non_sap_file,
                                      job_id=job_handle['id'],
                                      dataframe=df,
                                      )
+            uppie.submit_job(pool_id=non_sap_file.poolid, job_id=job_handle['id'])
+            logging.info(f'finished uploading {non_sap_file.file}')
+            data.append(target_name)
+            config["error"] = None
         except EmptyDataError:
             logging.warning(f'{non_sap_file} is empty and will be skipped')
             del jobstatus[job_handle['id']]
-            return None
+            config["error"] = EmptyDataError
         except Exception as e:
             logging.error(f'{non_sap_file} failed with error: {e}')
             logging.exception(''.join(tb.format_exception(None, e, e.__traceback__)))
             time.sleep(2)
-            if f"' expected after" in str(e) and no_quoting is False:
+            config["error"] = e
+            if f"' expected after" in config["error"] and no_quoting is False:
                 del jobstatus[job_handle['id']]
-                logging.info(f'retrying {non_sap_file} without quoting')
-                import_non_sap_file(non_sap_file,
-                                    jobstatus,
-                                    uppie,
-                                    data,
-                                    pwd,
-                                    delta,
-                                    as_string,
-                                    encoding_list,
-                                    no_quoting=True,
-                                    )
-            elif len(encoding_list) > 1 and "can't decode" in str(e):
+                logging.info(f'retrying {header} without quoting')
+                config["no_quoting"] = no_quoting
+            elif len(encoding_list) > 1 and "can't decode" in str(error):
                 encoding_list.pop(0)
                 del jobstatus[job_handle['id']]
-                import_non_sap_file(non_sap_file,
-                                    jobstatus,
-                                    uppie,
-                                    data,
-                                    pwd,
-                                    delta,
-                                    as_string,
-                                    encoding_list,
-                                    )
-        uppie.submit_job(pool_id=non_sap_file.poolid, job_id=job_handle['id'])
-        logging.info(f'finished uploading {non_sap_file.file}')
-        data.append(target_name)
-    return data
+                config["encoding_list"] = encoding_list
+            else:
+                config["error"] = None
+    return data, config
 
 
 def ibc_files_to_json(lst, name):
@@ -958,8 +946,9 @@ def main():
             data = import_sap_header(header=header, files=body, jobstatus=jobstatus, uppie=uppie, data=data,
                                      location_indicator=location_indicator, delta=delta, )
         else:
-            data = import_non_sap_file(non_sap_file=header, jobstatus=jobstatus, uppie=uppie, data=data, delta=delta,
-                                       as_string=as_string, )
+            non_sap_config = {"error": "tmp", "encoding_list": [None, "utf-8", "ascii", "cp1252", "latin_1", "iso-8859-1", ], "no_quoting": False, }
+            while non_sap_config["error"] is not None:
+                data, non_sap_config["error"] = import_non_sap_file(non_sap_file=header, jobstatus=jobstatus, uppie=uppie, data=data, delta=delta, as_string=as_string, config=non_sap_config)
     logging.info('upload done.')
     error_flag = False
     failed_tables = []
