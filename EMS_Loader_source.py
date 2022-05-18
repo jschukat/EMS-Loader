@@ -685,7 +685,8 @@ def import_non_sap_file(non_sap_file,
             jobstatus[job_handle['id']] = False
         except KeyError:
             logging.error(f'failed to get job id for file {non_sap_file} with job: {job_handle}')
-            return data, None
+            config["error"] = None
+            return data, config
         logging.info(f'starting to upload {target_name}')
         try:
             if len(test_member_part_of_object(non_sap_file.file, ["zip", "7z", "gz", "tar"])) > 0:
