@@ -848,6 +848,7 @@ def import_non_sap_file(non_sap_file,
                 config["encoding_list"] = encoding_list
             else:
                 config["error"] = None
+    config["error"] = None
     return data, config
 
 
