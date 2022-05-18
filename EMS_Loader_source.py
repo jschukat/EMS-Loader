@@ -950,7 +950,7 @@ def main():
         else:
             non_sap_config = {"error": "tmp", "encoding_list": [None, "utf-8", "ascii", "cp1252", "latin_1", "iso-8859-1", ], "no_quoting": False, }
             while non_sap_config["error"] is not None:
-                data, non_sap_config["error"] = import_non_sap_file(non_sap_file=header, jobstatus=jobstatus, uppie=uppie, data=data, delta=delta, as_string=as_string, config=non_sap_config)
+                data, non_sap_config = import_non_sap_file(non_sap_file=header, jobstatus=jobstatus, uppie=uppie, data=data, delta=delta, as_string=as_string, config=non_sap_config)
     logging.info('upload done.')
     error_flag = False
     failed_tables = []
