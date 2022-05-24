@@ -700,10 +700,14 @@ def import_non_sap_file(non_sap_file,
                     out.write(fh.getvalue())
                 df = parquet_utils.read_parquet(tmp_parquet_file)
                 tmp_parquet_file.unlink()
-                uppie.push_new_chunk(pool_id=non_sap_file.poolid,
-                                     job_id=job_handle['id'],
-                                     dataframe=df,
-                                     )
+                step = 400000
+                index = 0
+                while index < df.shape[0]:
+                    uppie.push_new_chunk(pool_id=non_sap_file.poolid,
+                                         job_id=job_handle['id'],
+                                         dataframe=df[index:index+step],
+                                         )
+                    index += step
             elif non_sap_file.file_type == '.csv':
                 if encoding_list[0] is None:
                     encoding = detect_encoding(non_sap_file, pwd)
