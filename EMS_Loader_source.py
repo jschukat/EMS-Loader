@@ -421,7 +421,7 @@ def detect_encoding(non_sap_file, pwd):
             if ".csv" in non_sap_file.file and ".gz" not in non_sap_file.file:
                 logging.info("starting csv detection")
                 counter = 0
-                for chunk in file_detect.iter_content(chunk_size=1024 * 1024 * 400, decode_unicode=False):
+                for chunk in file_detect.iter_content(chunk_size=1024 * 1024 * 200, decode_unicode=False):
                     lines = chunk.split()[1:-1]
                     logging.info(f"{str(counter)}, {len(lines)}")
                     for line in lines:
@@ -517,7 +517,7 @@ def download_file(file):
 def download_chunks(file, chunksize=None):
     url, headers = get_url_and_headers(file)
     if chunksize is None:
-        chunksize = 100
+        chunksize = 70
     with requests.get(url, headers=headers, stream=True) as r:
         for chunk in r.iter_content(chunk_size=1024 * 1024 * chunksize, decode_unicode=False):
             yield chunk
@@ -675,6 +675,7 @@ def import_non_sap_file(non_sap_file,
     target_name = clean_table_name(target_name)
     if target_name in data:
         logging.warning(f'skipping {non_sap_file.file} as table with {target_name} is already present in target pool.')
+        config["error"] = None
     else:
         job_handle = uppie.create_job(pool_id=non_sap_file.poolid,
                                       data_connection_id=non_sap_file.connectionid,
@@ -767,7 +768,7 @@ def import_non_sap_file(non_sap_file,
                         pd_config['quoting'] = 3
                     else:
                         pd_config['quotechar'] = quotechar
-                    for c, chunk in enumerate(download_chunks(file=non_sap_file, chunksize=400)):
+                    for c, chunk in enumerate(download_chunks(file=non_sap_file, chunksize=170)):
                         logging.debug(f"processing chunk number: {c + 1}")
                         lines, first_line_visited, buffer, names = process_non_sap_chunk(chunk=chunk, encoding=encoding,
                                                                                          delimiter=delimiter,
@@ -838,17 +839,18 @@ def import_non_sap_file(non_sap_file,
             logging.exception(''.join(tb.format_exception(None, e, e.__traceback__)))
             time.sleep(2)
             config["error"] = e
-            if f"' expected after" in config["error"] and no_quoting is False:
+            if f"' expected after" in str(e) and no_quoting is False:
+                logging.warning("quoting issue detected")
                 del jobstatus[job_handle['id']]
                 logging.info(f'retrying {header} without quoting')
                 config["no_quoting"] = no_quoting
-            elif len(encoding_list) > 1 and "can't decode" in str(error):
+            elif len(encoding_list) > 1 and "can't decode" in str(e):
+                logging.warning("encoding issue detected")
                 encoding_list.pop(0)
                 del jobstatus[job_handle['id']]
                 config["encoding_list"] = encoding_list
             else:
                 config["error"] = None
-    config["error"] = None
     return data, config
 
 
@@ -951,6 +953,7 @@ def main():
             non_sap_config = {"error": "tmp", "encoding_list": [None, "utf-8", "ascii", "cp1252", "latin_1", "iso-8859-1", ], "no_quoting": False, }
             while non_sap_config["error"] is not None:
                 data, non_sap_config = import_non_sap_file(non_sap_file=header, jobstatus=jobstatus, uppie=uppie, data=data, delta=delta, as_string=as_string, config=non_sap_config)
+                logging.debug("loop")
     logging.info('upload done.')
     error_flag = False
     failed_tables = []
