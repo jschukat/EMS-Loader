@@ -693,11 +693,11 @@ def import_non_sap_file(non_sap_file,
             if len(test_member_part_of_object(non_sap_file.file, ["zip", "7z", "gz", "tar"])) > 0:
                 fh = download_and_unzip_file(non_sap_file, pwd)
             else:
-                fh = None  # BytesIO(r.content)
+                fh = None
             if non_sap_file.file_type == '.parquet':
                 tmp_parquet_file = Path('/home/jovyan/tmp.parquet')
                 with open(tmp_parquet_file, 'wb') as out:
-                    out.write(fh.getvalue())
+                    out.write(download_file(non_sap_file))
                 df = parquet_utils.read_parquet(tmp_parquet_file)
                 tmp_parquet_file.unlink()
                 step = 400000
