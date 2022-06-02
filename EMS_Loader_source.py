@@ -795,6 +795,7 @@ def import_non_sap_file(non_sap_file,
                                              )
                         logging.info("chunk done")
             else:
+                fh = BytesIO(download_file(non_sap_file))
                 matches = {}
                 pd_config = {
                     'io': fh,
