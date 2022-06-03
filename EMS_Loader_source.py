@@ -741,6 +741,8 @@ def import_non_sap_file(non_sap_file,
                         pd_config['dtype'] = str
                     if no_quoting is True:
                         pd_config['quoting'] = 3
+                    else:
+                        pd_config['quotechar'] = quotechar or '"'
                     df_up = pd.read_csv(**pd_config)
                     for i in df_up:
                         logging.debug(i.head())
@@ -771,7 +773,7 @@ def import_non_sap_file(non_sap_file,
                     if no_quoting is True:
                         pd_config['quoting'] = 3
                     else:
-                        pd_config['quotechar'] = quotechar
+                        pd_config['quotechar'] = quotechar or '"'
                     for c, chunk in enumerate(download_chunks(file=non_sap_file, chunksize=170)):
                         logging.debug(f"processing chunk number: {c + 1}")
                         lines, first_line_visited, buffer, names = process_non_sap_chunk(chunk=chunk, encoding=encoding,
