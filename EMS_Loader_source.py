@@ -555,7 +555,7 @@ def determine_dialect(non_sap_file, enc):
             elif non_sap_file.file.split('.')[-1] == 'gz':
                 fh = gzip.GzipFile(fileobj=BytesIO(file_detect.content), mode='rb')
             else:
-                for chunk in file_detect.iter_content(chunk_size=1024 * 1024 * 400, decode_unicode=False):
+                for chunk in file_detect.iter_content(chunk_size=1024 * 1024 * 300, decode_unicode=False):
                     fh = BytesIO(chunk)
                     logging.info("chunk read")
                     break
@@ -563,7 +563,7 @@ def determine_dialect(non_sap_file, enc):
             for counter, line in enumerate(fh):
                 data.append(line.decode(enc))
                 counter += 1
-                if counter == 10:
+                if counter == 1000:
                     break
     except Exception as e:
         logging.error(e)
@@ -774,7 +774,7 @@ def import_non_sap_file(non_sap_file,
                         pd_config['quoting'] = 3
                     else:
                         pd_config['quotechar'] = quotechar or '"'
-                    for c, chunk in enumerate(download_chunks(file=non_sap_file, chunksize=170)):
+                    for c, chunk in enumerate(download_chunks(file=non_sap_file, chunksize=130)):
                         logging.debug(f"processing chunk number: {c + 1}")
                         lines, first_line_visited, buffer, names = process_non_sap_chunk(chunk=chunk, encoding=encoding,
                                                                                          delimiter=delimiter,
