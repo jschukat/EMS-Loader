@@ -523,6 +523,13 @@ def download_chunks(file, chunksize=None):
             yield chunk
 
 
+def determine_delimiter(line):
+    delim = dict()
+    for i in [';', ',', '\t', '|']:
+        delim[i] = len(line.split(i))
+    return sorted(delim.items(), key=lambda kv: kv[1])[-1][0]
+
+
 def determine_dialect(non_sap_file, enc):
     logging.info('starting dialect determination')
     sniffer = csv.Sniffer()
@@ -578,10 +585,7 @@ def determine_dialect(non_sap_file, enc):
         logging.warning('''sniffer was unsuccessful, using a simplistic approach
                         to determine the delimiter and existence of header.''')
         line1 = list_get(data, 0)
-        delim = dict()
-        for i in [';', ',', '\t', '|']:
-            delim[i] = len(line1.split(i))
-        delimiter = sorted(delim.items(), key=lambda kv: kv[1])[-1][0]
+        delimiter = determine_delimiter(line1)
         quotechar = None
         escapechar = None
         if any(map(test_float, line1.split(delimiter))):
@@ -592,6 +596,8 @@ def determine_dialect(non_sap_file, enc):
         header = 0
     else:
         header = None
+    if re.match('[a-zA-Z0-9-_ ]+', delimiter) is not None:
+        delimiter = determine_delimiter(list_get(data, 0))
     logging.info(f'''delimiter: {delimiter}, quotechar: {quotechar},
                      escapechar: {escapechar}, header: {header}''')
     return {'delimiter': delimiter, 'quotechar': quotechar,
