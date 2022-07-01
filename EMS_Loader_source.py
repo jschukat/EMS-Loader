@@ -628,6 +628,9 @@ def list_get(lst, index):
 def determine_column_names(header, delimiter, quotechar):
     if quotechar is not None:
         header = header.replace(quotechar, "")
+    if re.match(r"\w+", header[0]) is None:
+        logging.warning("removing this character: %s from the header.", header[0])
+        header = header[1:]
     header = header.split(delimiter)
     logging.info(f"number of columns: {len(header)}")
     names = []
