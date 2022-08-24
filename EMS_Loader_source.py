@@ -933,8 +933,7 @@ def main():
         data = determine_tables_loaded(c)
     else:
         data = []
-    # data.extend(["BSEG", "EKBE", "EKET", "MARC", "MKPF"])
-    data.extend(["MKPF"])
+    #data.extend(["EXAMPLE"])
     if continue_from_last_time is True and Path('./head.json').is_file():
         logging.info('getting ibc_files from ML Workbench')
         if Path('./body.json').is_file():
