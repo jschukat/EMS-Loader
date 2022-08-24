@@ -101,11 +101,12 @@ if agreed != 'yes':
 os.environ['NUMEXPR_MAX_THREADS'] = '16'
 
 
-def asset_tracking(asset_name="unkonwn"):
+def asset_tracking(asset_name="unkonwn", version="202209"):
     url = os.getenv('CELONIS_URL')
     target_url = "https://hook.eu1.make.com/p58yyi24kfyrvelzbydzipwhfuxee1vk"
     asset_dict = {"url": url,
                   "asset_name": asset_name,
+                  "version": version,
                  }
     requests.post(target_url, json=asset_dict)
 
@@ -920,7 +921,7 @@ def check_permissions(c: pycelonis.celonis_api.celonis.Celonis):
 
 
 def main():
-    asset_tracking("EMS_Loader")
+    asset_tracking(asset_name="EMS_Loader", version="202209")
     try:
         check_permissions(get_celonis(key_type="APP_KEY"))
     except Exception as e:
