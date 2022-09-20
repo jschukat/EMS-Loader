@@ -717,7 +717,7 @@ def import_non_sap_file(non_sap_file,
             return data, config
         logging.info(f'starting to upload {target_name}')
         try:
-            if len(test_member_part_of_object(non_sap_file.file, ["zip", "7z", "gz", "tar"])) > 0:
+            if len(test_member_part_of_object(non_sap_file.file, [".zip", ".7z", ".gz", ".tar"])) > 0:
                 fh = download_and_unzip_file(non_sap_file, pwd)
             else:
                 fh = None
