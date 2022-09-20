@@ -621,8 +621,16 @@ def list_to_str(lst):
     return return_list
 
 
+def remove_superflous_quotes(match_obj):
+    if match_obj.group(2) is not None:
+        return match_obj.group(2)
+    else:
+        return ""
+
+
 def remove_superfluous_spaces(lines, delimiter):
     lines = re.sub(" {2,}", " ", lines)
+    lines = re.sub(r'("*)("$|^"|(",")+)("*)|(?!,)(?<!,)("+)', remove_superflous_quotes, lines)
     lines = lines.replace(f"{delimiter} ", delimiter)
     lines = lines.replace(f" {delimiter}", delimiter)
     return lines
