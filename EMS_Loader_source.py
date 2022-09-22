@@ -395,7 +395,7 @@ def import_sap_header(header, files, jobstatus, uppie, data, location_indicator=
         header_json = {'Authorization': 'AppKey {}'.format(header.appkey), 'Accept': 'application/octet-stream'}
         pre_url = f'https://{header.team}.{header.realm}.celonis.cloud/storage-manager/api/buckets/{header.bucket_id}/files?path=/'
         with get_context("forkserver").Pool(5) as pool:
-            logging.info('jumping into the pool')
+            logging.debug('jumping into the pool')
             parallel_jobs = pool.imap_unordered(sap_load, zip(relevant_files, repeat(pre_url), repeat(header_json),
                                                               repeat(header), repeat(jobhandle['id']), repeat(df),
                                                               repeat(type_dict), repeat(uppie)))
@@ -429,11 +429,11 @@ def detect_encoding(non_sap_file, pwd):
         with requests.get(url, headers=header_json, stream=True) as file_detect:
             file_detect.raise_for_status()
             if ".csv" in non_sap_file.file and ".gz" not in non_sap_file.file:
-                logging.info("starting csv detection")
+                logging.debug("starting csv detection")
                 counter = 0
                 for chunk in file_detect.iter_content(chunk_size=1024 * 1024 * 200, decode_unicode=False):
                     lines = chunk.split()[1:-1]
-                    logging.info(f"{str(counter)}, {len(lines)}")
+                    logging.debug(f"{str(counter)}, {len(lines)}")
                     for line in lines:
                         detector.feed(line)
                         counter += 1
@@ -443,7 +443,7 @@ def detect_encoding(non_sap_file, pwd):
                             break
                     if detector.done or counter >= 50000:
                         break
-                logging.info("csv detection done")
+                logging.debug("csv detection done")
             else:
                 logging.info("starting other detection done")
                 if non_sap_file.file.split('.')[-1] == 'zip':
@@ -574,9 +574,9 @@ def determine_dialect(non_sap_file, enc):
             else:
                 for chunk in file_detect.iter_content(chunk_size=1024 * 1024 * 300, decode_unicode=False):
                     fh = BytesIO(chunk)
-                    logging.info("chunk read")
+                    logging.debug("chunk read")
                     break
-                logging.info("left chunking")
+                logging.debug("left chunking")
             for counter, line in enumerate(fh):
                 data.append(line.decode(enc))
                 counter += 1
@@ -667,7 +667,7 @@ def process_non_sap_chunk(chunk, encoding, delimiter, first_line_visited, buffer
     lines = chunk.decode(encoding)
     lines = remove_superfluous_spaces(lines, delimiter)
     lines = lines.split("\n")
-    logging.info("chunk cleaned")
+    logging.debug("chunk cleaned")
     if first_line_visited is True:
         lines[0] = buffer + lines[0]
     else:
@@ -811,13 +811,13 @@ def import_non_sap_file(non_sap_file,
                                                                                              'quotechar', None))
                         pd_config['names'] = names
                         pd_config['filepath_or_buffer'] = lines
-                        logging.info("reading csv")
+                        logging.debug("reading csv")
                         df_up = pd.read_csv(**pd_config)
                         logging.debug(df_up.head())
                         df_up.columns = list_to_str(list(df_up.columns))
                         logging.debug(df_up.columns)
                         logging.debug(df_up.dtypes)
-                        logging.info("pushing chunk")
+                        logging.debug("pushing chunk")
                         uppie.push_new_chunk(pool_id=non_sap_file.poolid,
                                              job_id=job_handle['id'],
                                              dataframe=df_up,
