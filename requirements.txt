@@ -4,3 +4,4 @@ numpy
 fastparquet
 pyarrow
 chardet
+ipywidgets>=7.7.2
